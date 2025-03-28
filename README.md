@@ -1,0 +1,1 @@
+This is my first homework submission for the course Computational Finance, which involves topics of numerical integration, Black-Scholes martingale pricing, and variance simulation. The questions themselves can be found in the file Exercise Set 1 (1).pdf, while my theoretical answers to them can be found in the file Computational_Finance_HW1.pdf.
