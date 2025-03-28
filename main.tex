@@ -1,0 +1,107 @@
+\documentclass{article}
+\usepackage{a4wide}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{arydshln}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{dsfont}
+\usepackage{tikz-cd}
+\usepackage{amsmath, amssymb, amsfonts, mathtools, derivative}
+
+\title{Computational Finance}
+\author{Duc Minh Nguyen, minh.nguyen4@student.uva.nl}
+\date{March 2025}
+
+\begin{document}
+
+\maketitle
+
+\section*{Q1}
+\subsection*{a.)}
+Firstly, note that 
+\begin{align}
+    \int_0^t (t-s) dW(s) = t W(s) - \int_0^t s dW(s)
+\end{align}
+Now, let's apply Itô's lemma on the process $g(t, W) = t W(t)$ we get the dynamics
+\begin{align}
+    dg(t, W) = W(t) dt + t dW(t)+ 0 = W(t)dt +tdW(t)
+\end{align}
+Next, we integrate both sides we get 
+\begin{align}
+   \int_0^t dg(s, W) = \int_0^t d(sW(s)) = \int_0^t W(s) ds + \int_0^t s dW(s)
+\end{align}
+Since $\int_0^t d(sW(s)) =tW(t)$ we get $ tW(t) = \int_0^t W(s) ds + \int_0^t s dW(s)$. Rearranging terms we get 
+\begin{align}
+    \int_0^t W(s) ds = tW(t) - \int_0^t s dW(s) = \int_0^t (t-s) dW(s) \quad \square
+\end{align}
+
+\subsection*{b.)}
+We have performed numerical simulation to validate this result. Firstly, we generated 10000 standard Brownian motion paths in time steps of $N=1000$. For each of the simulated paths, we approximated the integral on the left-hand side with Riemann sum:
+\begin{align}
+    \sum_{i=0}^{N-1} W(t_i) \Delta t
+\end{align}
+Then, for each simulated path we computed the stochastic integral of the right-hand side
+\begin{align}
+    \sum_{i=0}^{N-1} (t - t_i) (W(t_{i+1}) - W(t_i))
+\end{align}
+Then, the difference vector of these two integrals is comuted. Taking the sample mean of the difference vector yields $0.00000$. Computing the absolute mean error of the difference vector yield $MAE = 0.0089$ which is close to $0$, indicating that our theoretical proof in a. is correct.
+
+\section*{Q2}
+\subsection*{a.)}
+Firstly, we find the partial derivatives: 
+$$ 
+\frac{\partial Y_1}{ \partial t} = 0 \quad \quad  \frac{\partial Y_1}{ \partial S} = 2 \mu S(t) \quad \quad  \frac{\partial^2 Y_1}{ \partial S^2} = 2 \mu 
+$$
+Now, applying Itô's Lemma to the process $g(t, S)=Y_1(t)$ we get the dynamics 
+\begin{align}
+    dY_1 (t) &= \Big( \frac{\partial Y_1}{ \partial t}  + (S(t) \mu) \frac{\partial Y_1}{ \partial S} + \frac{1}{2} (S(t) \sigma)^2 \frac{\partial^2 Y_1}{ \partial S^2}    \Big)dt +   \frac{\partial Y_1}{ \partial S} (S(t) \sigma) dW(t)= \\
+    &=  \Big( 2 S^2(t) \mu^2 + \mu \sigma^2 S^2(t)    \Big)dt + 2 \mu \sigma S^2(t) d W(t) = \\
+    &= Y_1(t)\Big( 2 \mu +  \sigma^2     \Big)dt + 2  \sigma Y_1(t) d W(t) 
+\end{align}
+
+\subsection*{b.)}
+The partial derivatives are:
+$$
+\frac{\partial Y_2}{ \partial t} = 0 \quad \quad  \frac{\partial Y_2}{ \partial W} = e^{W(t)} \quad \quad  \frac{\partial^2 Y_2}{ \partial W^2} = e^{W(t)} \mu 
+$$
+Again, we apply Itô's Lemma:
+\begin{align}
+    dY_2 (t) &=\Big( \frac{\partial Y_2}{ \partial t}  + 0 \cdot \frac{\partial Y_2}{ \partial W} + \frac{1}{2} \frac{\partial^2 Y_1}{ \partial W^2}    \Big)dt +   \frac{\partial Y_2}{ \partial W}  dW(t)= \\
+    &=  \frac{1}{2} e^{W(t)} dt + e^{W(t)} dW(t) = \\ 
+    & = \frac{1}{2} Y_2(t) dt + Y_2(t)dW(t)
+\end{align}
+Next, we will show that the process $Y_2(t)$ is not a martingale by deducing that 
+$$
+\mathbb{E}[Y_2(t) | \mathcal{F}_s ] \neq Y_2(s) \quad \text{ for $t > s$ }
+$$
+Note that $e^{W(t-s)} \sim \text{lognormal}$ with expectation $\mathbb{E}[e^{W(t-s)}]=e^{\frac{t-s}{2}}$. Then using independeent increments of Brownian motion we get
+\begin{align}
+   \mathbb{E}[Y_2(t) | \mathcal{F}_s ] =   \mathbb{E}[e^{W(t)} | \mathcal{F}_s ] = e^{W(s)} \mathbb{E}[e^{W(t-s)} | \mathcal{F}_s ] = e^{W(s)} \mathbb{E}[e^{W(t-s)}  ] = e^{W(s)} e^{\frac{t-s}{2}} \neq e^{W(s)}
+\end{align}
+Thus, $Y_2$ is not a martingale.
+
+\section*{Q3}
+The setup for our simulation is as following: we consider a European call option with initial price $S_0 = 90$, strike $K=100$, risk free interest rate $r=0.02$, volatility $\sigma = 0.4$, $T=1$. We first computed the theoretical price based on Black-Scholes formula for European call option which yields $V_{\text{theoretical}}=11.2257$. Next, for each case with and without standardization, we simulated $1000$ paths of Black-Scholes brownian motion for call option. Then, the calculated price of call with standardization is $11.58$ and without standardization is $11.81$, and their absolute error compared to the theoretical price is $0.354$ and $0.5901$ respectively. Thus, simulation with standardization yields a better result compared to the without standardization. However, the difference is actually relatively small for two cases. We can conclude that standardizing is better than not, but not by significantly much.
+
+
+\section*{Q4}
+We first theoretically compute $\text{Var}(X(t))$, by using the formula for variance of sum of two random variables:
+\begin{align}
+    \text{Var}(X(t)) = \text{Var}\Big(W(t)-\frac{t}{T} W(T-t) \Big)= \text{Var}(W(t))+ \frac{t^2}{T^2}  \text{Var}(W(T-t)) - 2 \frac{t}{T} \text{Cov}(W(t), W(T-t))
+\end{align}
+Now, to compute the covariance, we know from theory of Brownian motion that $\text{Cov}(W(t), W(s))= \min\{t,s \}$, which implies that $\text{Cov}(W(t), W(T-t))=\min\{t,T-t \} $. Using that $\text{Var}(W(t))=t$ we have the result
+\begin{align}
+    \text{Var}(X(t)) = t+\frac{t^2(T-t)}{T^2}  -  2 \frac{t}{T}\min\{t,T-t \} 
+\end{align}
+Next, we performed numerical simulation for $\text{Var}(X(t))$ by generating $1000$ paths of $X(t)$ on $t \in [0,10]$ with number of time steps of $1000$. At each time step $t$, we calculated the sample variance over the $1000$ paths. Next, we calculated the theoretical variance vector $(\text{Var}(X(t))$. Then, plotting the simulated and theoretical variance vectors in Figure 1. 
+\begin{figure}[h!]
+    \centering
+\includegraphics[width=0.7 \linewidth]{Q4_plot.png}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+From the plot we can clearly see that the simulated variance at first closely approximates $t$, however around $t=5$ it starts to deviate from the theoretical variance. As $t$ increases, the simulated variance decreases, meanwhile the theoretical variance increases. The behaviour of the $\min$ function in the formula for theoretical variance, as after $t=5$, $T-t$ becomes smaller than $t$.
+
+\end{document}
